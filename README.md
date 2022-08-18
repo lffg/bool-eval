@@ -7,11 +7,10 @@ Tiny school project.
 ```bnf
 <Program> ::= <Control> <Expr>
 
-<Control> ::= <Number> ( <Bit> )*
+<Control> ::= <Number> ( <Number> )*
 
 <Ident> ::= ([a-z] | [A-Z])+
 <Number> ::= [0-9]+
-<Bit> ::= "0" | "1"
 
 <Expr> ::= <VarExpr> | <AppExpr>
 

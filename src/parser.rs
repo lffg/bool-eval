@@ -5,7 +5,7 @@ use crate::{
     util::{Error, PResult, Span},
 };
 
-pub fn parse<'src>(src: &'src str, tokens: impl Iterator<Item = Token>) -> PResult<Expr> {
+pub fn parse(src: &str, tokens: impl Iterator<Item = Token>) -> PResult<Expr> {
     let mut p = Parser {
         tokens: tokens.peekable(),
         src,

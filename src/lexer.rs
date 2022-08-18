@@ -31,7 +31,7 @@ pub fn lex(src: &str) -> impl Iterator<Item = Token> + '_ {
             c if c.is_ascii_whitespace() => TokenKind::Whitespace,
             c => {
                 chars.next().unwrap();
-                return token(TokenKind::ErrorUnexpected(c), c.len_utf8() as _);
+                return token(TokenKind::ErrorUnexpected(c), c.len_utf8());
             }
         };
 
