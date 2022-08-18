@@ -1,7 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
   "version": "0.2",
-  "enabledLanguageIds": ["*"],
+  "enabledLanguageIds": [
+    "*"
+  ],
   "languageSettings": [
     {
       "languageId": "*",
@@ -10,6 +12,12 @@
     }
   ],
   "useGitignore": true,
-  "ignorePaths": [".git"],
-  "words": []
+  "ignorePaths": [
+    ".git"
+  ],
+  "words": [
+    "curr",
+    "lexme",
+    "peekable"
+  ]
 }
