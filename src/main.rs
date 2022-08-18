@@ -1,4 +1,5 @@
 use bool_eval::{
+    ast::Program,
     lexer::lex,
     parser::parse,
     util::{ErrorPrinter, ExprTreePrinter},
@@ -24,7 +25,10 @@ fn main() {
         println!("Parsing `{input}`...\n");
         let tokens = lex(&input);
         match parse(&input, tokens) {
-            Ok(expr) => print!("{}", ExprTreePrinter(&expr)),
+            Ok(Program { expr, args }) => {
+                println!("{}\n", ExprTreePrinter(&expr));
+                println!("=== ARGS ===\n{args:#?}");
+            }
             Err(error) => println!("Error:\n  {}", ErrorPrinter(&error)),
         }
         println!("------");

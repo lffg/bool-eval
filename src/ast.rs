@@ -1,6 +1,12 @@
 use crate::util::Span;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
+pub struct Program {
+    pub expr: Expr,
+    pub args: Vec<bool>,
+}
+
+#[derive(Debug)]
 pub struct Expr {
     pub kind: ExprKind,
     pub span: Span,
@@ -9,19 +15,19 @@ pub struct Expr {
 impl Expr {
     pub fn children(&self) -> Box<dyn Iterator<Item = &Expr> + '_> {
         match &self.kind {
-            ExprKind::Var(_) => Box::new(std::iter::empty()),
             ExprKind::App(_, args) => Box::new(args.into_iter()),
+            _ => Box::new(std::iter::empty()),
         }
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum ExprKind {
     Var(Ident),
     App(Ident, Vec<Expr>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Ident {
     pub ident: String,
     pub span: Span,

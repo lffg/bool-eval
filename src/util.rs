@@ -45,11 +45,8 @@ pub struct Error {
 }
 
 impl Error {
-    pub fn new(message: impl Into<String>, span: Span) -> Self {
-        Self {
-            message: message.into(),
-            span,
-        }
+    pub fn new(message: String, span: Span) -> Self {
+        Self { message, span }
     }
 }
 
