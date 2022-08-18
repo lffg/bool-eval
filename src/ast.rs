@@ -46,6 +46,7 @@ impl Token {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum TokenKind {
     Ident,
+    Number,
     LParen,
     RParen,
     Comma,

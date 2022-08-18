@@ -1,3 +1,5 @@
+use std::iter::{self, Peekable};
+
 use crate::{
     ast::{Token, TokenKind},
     util::Span,
@@ -6,7 +8,7 @@ use crate::{
 pub fn lex(src: &str) -> impl Iterator<Item = Token> + '_ {
     let mut chars = src.char_indices().peekable();
 
-    std::iter::from_fn(move || {
+    iter::from_fn(move || {
         let (start, curr) = *chars.peek()?;
 
         let token = |kind, len| Some(Token::new(kind, Span::new(start, start + len)));
@@ -15,18 +17,13 @@ pub fn lex(src: &str) -> impl Iterator<Item = Token> + '_ {
             '(' => TokenKind::LParen,
             ')' => TokenKind::RParen,
             ',' => TokenKind::Comma,
+            c if c.is_ascii_digit() => {
+                let len = bump_while(&mut chars, |c| c.is_ascii_digit());
+                return token(TokenKind::Number, len);
+            }
             c if c.is_ascii_alphabetic() => {
-                let mut curr_len = 0;
-                while {
-                    let (_, char) = chars.next().unwrap();
-                    curr_len += char.len_utf8();
-                    let next = chars.peek();
-                    matches!(next, Some((_, c)) if c.is_ascii_alphabetic())
-                } {}
-                return token(
-                    TokenKind::Ident,
-                    curr_len.try_into().expect("token too large"),
-                );
+                let len = bump_while(&mut chars, |c| c.is_ascii_alphabetic());
+                return token(TokenKind::Ident, len);
             }
             c if c.is_ascii_whitespace() => TokenKind::Whitespace,
             c => {
@@ -39,8 +36,23 @@ pub fn lex(src: &str) -> impl Iterator<Item = Token> + '_ {
         token(simple_kind, 1)
     })
     .filter(|token| token.kind != TokenKind::Whitespace)
-    .chain(std::iter::once(Token::new(
+    .chain(iter::once(Token::new(
         TokenKind::Eof,
         Span::new(src.len(), src.len()),
     )))
+}
+
+fn bump_while<I, F>(chars: &mut Peekable<I>, f: F) -> usize
+where
+    I: Iterator<Item = (usize, char)>,
+    F: Fn(char) -> bool,
+{
+    let mut curr_len = 0;
+    while {
+        let (_, c) = chars.next().unwrap();
+        curr_len += c.len_utf8();
+        let next = chars.peek();
+        matches!(next, Some((_, c)) if f(*c))
+    } {}
+    curr_len
 }
