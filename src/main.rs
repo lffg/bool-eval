@@ -1,4 +1,8 @@
-use bool_eval::lexer::lex;
+use bool_eval::{
+    lexer::lex,
+    parser::parse,
+    util::{ErrorPrinter, ExprTreePrinter},
+};
 
 fn repl(prompt: &str) -> impl Iterator<Item = String> + '_ {
     use std::io::{stdin, stdout, Write};
@@ -16,11 +20,13 @@ fn repl(prompt: &str) -> impl Iterator<Item = String> + '_ {
 
 fn main() {
     for input in repl(">>> ") {
-        println!("Parsing `{input}`...");
-        for token in lex(&input) {
-            let text = &input[token.span.range()];
-            let kind = token.kind;
-            println!("`{text}` :: {kind:?}");
+        println!("------");
+        println!("Parsing `{input}`...\n");
+        let tokens = lex(&input);
+        match parse(&input, tokens) {
+            Ok(expr) => print!("{}", ExprTreePrinter(&expr)),
+            Err(error) => println!("Error:\n  {}", ErrorPrinter(&error)),
         }
+        println!("------");
     }
 }

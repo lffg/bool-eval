@@ -6,6 +6,15 @@ pub struct Expr {
     pub span: Span,
 }
 
+impl Expr {
+    pub fn children(&self) -> Box<dyn Iterator<Item = &Expr> + '_> {
+        match &self.kind {
+            ExprKind::Var(_) => Box::new(std::iter::empty()),
+            ExprKind::App(_, args) => Box::new(args.into_iter()),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum ExprKind {
     Var(Ident),
@@ -22,32 +31,15 @@ pub struct Ident {
 pub struct Token {
     pub kind: TokenKind,
     pub span: Span,
-    fabricated: bool,
 }
 
 impl Token {
     pub fn new(kind: TokenKind, span: Span) -> Self {
-        Self {
-            kind,
-            span,
-            fabricated: false,
-        }
+        Self { kind, span }
     }
 
     pub fn lexme<'src>(&self, src: &'src str) -> &'src str {
-        if self.fabricated {
-            self.kind.fabricated_lexme()
-        } else {
-            &src[self.span.range()]
-        }
-    }
-
-    pub fn fabricate(kind: TokenKind, span: Span) -> Self {
-        Self {
-            kind,
-            span,
-            fabricated: true,
-        }
+        &src[self.span.range()]
     }
 }
 
@@ -60,18 +52,4 @@ pub enum TokenKind {
     Whitespace,
     Eof,
     ErrorUnexpected(char),
-}
-
-impl TokenKind {
-    pub fn fabricated_lexme(&self) -> &'static str {
-        match self {
-            TokenKind::Ident => "fabricated",
-            TokenKind::LParen => "(",
-            TokenKind::RParen => ")",
-            TokenKind::Comma => ",",
-            TokenKind::Whitespace => "",
-            TokenKind::Eof => "",
-            TokenKind::ErrorUnexpected(_) => "",
-        }
-    }
 }

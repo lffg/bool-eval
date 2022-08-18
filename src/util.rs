@@ -1,39 +1,9 @@
 use std::{
     fmt::{self, Display},
-    io,
     ops::Range,
 };
 
-pub type PResult<'src, T> = std::result::Result<T, Error>;
-
-#[derive(Debug)]
-pub struct Error {
-    message: String,
-    span: Span,
-}
-
-impl Error {
-    pub fn new(message: impl Into<String>, span: Span) -> Self {
-        Self {
-            message: message.into(),
-            span,
-        }
-    }
-
-    pub fn report(&self, _text: &str, sink: &mut dyn io::Write) -> io::Result<()> {
-        // TODO: Use `_text`.
-        let range = self.span.range();
-        writeln!(sink, "{} (at {}..{})", self.message, range.start, range.end)
-    }
-}
-
-impl std::error::Error for Error {}
-
-impl Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.message.fmt(f)
-    }
-}
+use crate::ast::{Expr, ExprKind};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Span {
@@ -56,5 +26,74 @@ impl Span {
             start: self.start,
             end: self.end,
         }
+    }
+}
+
+impl Display for Span {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Span { start, end } = self;
+        write!(f, "{start}..{end}")
+    }
+}
+
+pub type PResult<'src, T> = std::result::Result<T, Error>;
+
+#[derive(Debug)]
+pub struct Error {
+    message: String,
+    span: Span,
+}
+
+impl Error {
+    pub fn new(message: impl Into<String>, span: Span) -> Self {
+        Self {
+            message: message.into(),
+            span,
+        }
+    }
+}
+
+impl std::error::Error for Error {}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.message.fmt(f)
+    }
+}
+
+pub struct ErrorPrinter<'a>(pub &'a Error);
+
+impl Display for ErrorPrinter<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Error { message, span } = self.0;
+        write!(f, "{message}, (at {span})")
+    }
+}
+
+pub struct ExprTreePrinter<'a>(pub &'a Expr);
+
+impl Display for ExprTreePrinter<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        pub struct ExprData<'a>(&'a Expr);
+
+        impl Display for ExprData<'_> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                match &self.0.kind {
+                    ExprKind::Var(i) => write!(f, "VAR ({:?})", i.ident),
+                    ExprKind::App(i, _) => write!(f, "APP ({:?})", i.ident),
+                }
+            }
+        }
+
+        fn go(level: usize, expr: &Expr, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "{}", "  ".repeat(level))?;
+            writeln!(f, "{} @ {}", ExprData(expr), expr.span)?;
+            for children in expr.children() {
+                go(level + 1, children, f)?;
+            }
+            Ok(())
+        }
+
+        go(0, self.0, f)
     }
 }
