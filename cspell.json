@@ -13,11 +13,13 @@
   ],
   "useGitignore": true,
   "ignorePaths": [
-    ".git"
+    ".git",
+    "Cargo.lock"
   ],
   "words": [
     "curr",
     "lexme",
-    "peekable"
+    "peekable",
+    "rfind"
   ]
 }

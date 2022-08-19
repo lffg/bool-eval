@@ -1,4 +1,5 @@
 use std::{
+    cmp,
     fmt::{self, Display},
     ops::Range,
 };
@@ -58,12 +59,46 @@ impl Display for Error {
     }
 }
 
-pub struct ErrorPrinter<'a>(pub &'a Error);
+pub struct ErrorPrinter<'a, 'src>(pub &'a Error, pub &'src str);
 
-impl Display for ErrorPrinter<'_> {
+impl Display for ErrorPrinter<'_, '_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Error { message, span } = self.0;
-        write!(f, "{message}, (at {span})")
+        use ansi_term::Color::{Blue, Red};
+        use unicode_width::UnicodeWidthStr;
+
+        fn line_bounds(src: &str, Span { start, end }: Span) -> (usize, usize) {
+            let left = src[..start].rfind('\n').map(|p| p + 1).unwrap_or(0);
+            let right = src[end..]
+                .find('\n')
+                .map(|p| start + p + 1)
+                .unwrap_or(src.len());
+            (left, right)
+        }
+
+        fn src_sections(src: &str, span: Span) -> (&str, &str, &str) {
+            let (lo, hi) = line_bounds(src, span);
+            let left = &src[lo..span.start];
+            let offending = &src[span.range()];
+            let right = &src[span.end..hi];
+            (left, offending, right)
+        }
+
+        let Self(Error { message, span }, src) = self;
+        let (before, offending, after) = src_sections(src, *span);
+
+        let spaces = " ".repeat(UnicodeWidthStr::width(before));
+        let arrows = "^".repeat(cmp::max(1, UnicodeWidthStr::width(offending)));
+
+        let a = Blue.paint("-->");
+        let p = Blue.paint("|");
+
+        writeln!(f, "{a} Error: {message} (at {span})")?;
+        writeln!(f, " {p}")?;
+        writeln!(f, " {p} {}{}{}", before, Red.paint(offending), after)?;
+        writeln!(f, " {p} {}{}", spaces, Blue.paint(arrows))?;
+        writeln!(f, " {p}")?;
+
+        Ok(())
     }
 }
 

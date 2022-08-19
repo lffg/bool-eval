@@ -3,4 +3,9 @@ name = "bool-eval"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+show-tree = []
+
 [dependencies]
+ansi_term = "0.12"
+unicode-width = "0.1"

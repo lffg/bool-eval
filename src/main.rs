@@ -1,4 +1,4 @@
-use bool_eval::{eval_program, lex, parse_program, ErrorPrinter, PResult};
+use bool_eval::{eval_program, lex, parse_program, ErrorPrinter, ExprTreePrinter, PResult};
 
 fn repl(prompt: &str) -> impl Iterator<Item = String> + '_ {
     use std::io::{stdin, stdout, Write};
@@ -16,15 +16,24 @@ fn repl(prompt: &str) -> impl Iterator<Item = String> + '_ {
 
 fn run(input: &str) -> PResult<bool> {
     let program = parse_program(input, lex(input))?;
+    if cfg!(feature = "show-tree") {
+        println!(
+            "=== PARSE TREE ===\n{}======",
+            ExprTreePrinter(&program.expr)
+        );
+    }
     let val = eval_program(&program)?;
     Ok(val)
 }
 
 fn main() {
     for input in repl(">>> ") {
+        if input.trim().is_empty() {
+            continue;
+        }
         match run(&input) {
             Ok(val) => println!("{val}"),
-            Err(error) => println!("Error:\n  {}", ErrorPrinter(&error)),
+            Err(error) => print!("{}", ErrorPrinter(&error, &input)),
         }
     }
 }
