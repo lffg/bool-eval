@@ -36,7 +36,7 @@ impl Display for Span {
     }
 }
 
-pub type PResult<'src, T> = std::result::Result<T, Error>;
+pub type PResult<T> = std::result::Result<T, Error>;
 
 #[derive(Debug)]
 pub struct Error {

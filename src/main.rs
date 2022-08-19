@@ -1,5 +1,6 @@
 use bool_eval::{
     ast::Program,
+    evaluator::env,
     lexer::lex,
     parser::parse,
     util::{ErrorPrinter, ExprTreePrinter},
@@ -27,7 +28,7 @@ fn main() {
         match parse(&input, tokens) {
             Ok(Program { expr, args }) => {
                 println!("{}\n", ExprTreePrinter(&expr));
-                println!("=== ARGS ===\n{args:#?}");
+                println!("=== ENV ===\n{:#?}", env(args));
             }
             Err(error) => println!("Error:\n  {}", ErrorPrinter(&error)),
         }

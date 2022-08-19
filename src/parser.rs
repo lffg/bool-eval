@@ -2,6 +2,7 @@ use std::iter::Peekable;
 
 use crate::{
     ast::{Expr, ExprKind, Ident, Program, Token, TokenKind},
+    evaluator::MAX_ARG_COUNT,
     util::{Error, PResult, Span},
 };
 
@@ -30,7 +31,13 @@ where
     }
 
     fn parse_control(&mut self) -> PResult<Vec<bool>> {
-        let (arg_count, _) = self.parse_number()?;
+        let (arg_count, arg_count_span) = self.parse_number()?;
+        if arg_count > MAX_ARG_COUNT {
+            return Err(self.error_at(
+                format!("can't declare more than {MAX_ARG_COUNT} params"),
+                arg_count_span,
+            ));
+        }
         let mut args = Vec::new();
         for _ in 1..=arg_count {
             if !self.is(TokenKind::Number) {
@@ -89,7 +96,7 @@ where
         Ok(args)
     }
 
-    fn parse_number(&mut self) -> PResult<(u32, Span)> {
+    fn parse_number(&mut self) -> PResult<(usize, Span)> {
         let number_t = self.consume(TokenKind::Number)?;
         number_t
             .lexme(self.src)
