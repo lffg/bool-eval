@@ -20,7 +20,7 @@ Tiny school project.
 <AppArgs> ::= <Expr> ( "," <Expr> )* ","?
 ```
 
-### Examples:
+### Examples
 
 ```
 > 2 1 0 and(A, B)
