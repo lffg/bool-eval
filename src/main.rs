@@ -2,7 +2,7 @@ use bool_eval::{
     evaluator::eval_program,
     lexer::lex,
     parser::parse_program,
-    util::{Error, ErrorPrinter},
+    util::{ErrorPrinter, PResult},
 };
 
 fn repl(prompt: &str) -> impl Iterator<Item = String> + '_ {
@@ -19,26 +19,17 @@ fn repl(prompt: &str) -> impl Iterator<Item = String> + '_ {
     })
 }
 
-fn main() {
-    for input in repl(">>> ") {
-        let program = match parse_program(&input, lex(&input)) {
-            Ok(program) => program,
-            Err(error) => {
-                print_error(&error);
-                continue;
-            }
-        };
-        let val = match eval_program(&program) {
-            Ok(val) => val,
-            Err(error) => {
-                print_error(&error);
-                continue;
-            }
-        };
-        println!("{val}");
-    }
+fn run(input: &str) -> PResult<bool> {
+    let program = parse_program(&input, lex(&input))?;
+    let val = eval_program(&program)?;
+    Ok(val)
 }
 
-fn print_error(error: &Error) {
-    println!("Error:\n  {}", ErrorPrinter(&error))
+fn main() {
+    for input in repl(">>> ") {
+        match run(&input) {
+            Ok(val) => println!("{val}"),
+            Err(error) => println!("Error:\n  {}", ErrorPrinter(&error)),
+        }
+    }
 }
