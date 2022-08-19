@@ -1,9 +1,8 @@
 use bool_eval::{
-    ast::Program,
-    evaluator::env,
+    evaluator::eval_program,
     lexer::lex,
-    parser::parse,
-    util::{ErrorPrinter, ExprTreePrinter},
+    parser::parse_program,
+    util::{Error, ErrorPrinter},
 };
 
 fn repl(prompt: &str) -> impl Iterator<Item = String> + '_ {
@@ -22,16 +21,24 @@ fn repl(prompt: &str) -> impl Iterator<Item = String> + '_ {
 
 fn main() {
     for input in repl(">>> ") {
-        println!("------");
-        println!("Parsing `{input}`...\n");
-        let tokens = lex(&input);
-        match parse(&input, tokens) {
-            Ok(Program { expr, args }) => {
-                println!("{}\n", ExprTreePrinter(&expr));
-                println!("=== ENV ===\n{:#?}", env(args));
+        let program = match parse_program(&input, lex(&input)) {
+            Ok(program) => program,
+            Err(error) => {
+                print_error(&error);
+                continue;
             }
-            Err(error) => println!("Error:\n  {}", ErrorPrinter(&error)),
-        }
-        println!("------");
+        };
+        let val = match eval_program(&program) {
+            Ok(val) => val,
+            Err(error) => {
+                print_error(&error);
+                continue;
+            }
+        };
+        println!("{val}");
     }
+}
+
+fn print_error(error: &Error) {
+    println!("Error:\n  {}", ErrorPrinter(&error))
 }
