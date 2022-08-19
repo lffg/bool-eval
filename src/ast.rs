@@ -15,7 +15,7 @@ pub struct Expr {
 impl Expr {
     pub fn children(&self) -> Box<dyn Iterator<Item = &Expr> + '_> {
         match &self.kind {
-            ExprKind::App(_, args) => Box::new(args.into_iter()),
+            ExprKind::App(_, args) => Box::new(args.iter()),
             _ => Box::new(std::iter::empty()),
         }
     }

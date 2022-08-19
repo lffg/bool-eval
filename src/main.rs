@@ -1,9 +1,4 @@
-use bool_eval::{
-    evaluator::eval_program,
-    lexer::lex,
-    parser::parse_program,
-    util::{ErrorPrinter, PResult},
-};
+use bool_eval::{eval_program, lex, parse_program, ErrorPrinter, PResult};
 
 fn repl(prompt: &str) -> impl Iterator<Item = String> + '_ {
     use std::io::{stdin, stdout, Write};
@@ -20,7 +15,7 @@ fn repl(prompt: &str) -> impl Iterator<Item = String> + '_ {
 }
 
 fn run(input: &str) -> PResult<bool> {
-    let program = parse_program(&input, lex(&input))?;
+    let program = parse_program(input, lex(input))?;
     let val = eval_program(&program)?;
     Ok(val)
 }

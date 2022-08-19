@@ -18,14 +18,14 @@ pub fn args_to_env(args: &[bool]) -> Env {
     assert!(args.len() <= MAX_ARG_COUNT);
     ('A'..)
         .map(String::from)
-        .zip(args.into_iter().copied())
+        .zip(args.iter().copied())
         .collect()
 }
 
 fn eval_expr(expr: &Expr, env: &Env) -> PResult<bool> {
     match &expr.kind {
         ExprKind::Var(ident) => eval_ident(ident, env),
-        ExprKind::App(ident, args) => eval_app(ident, &args, env),
+        ExprKind::App(ident, args) => eval_app(ident, args, env),
     }
 }
 

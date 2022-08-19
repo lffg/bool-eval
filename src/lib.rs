@@ -1,5 +1,12 @@
-pub mod ast;
-pub mod evaluator;
-pub mod lexer;
-pub mod parser;
-pub mod util;
+mod ast;
+mod evaluator;
+mod lexer;
+mod parser;
+mod util;
+
+pub use self::{
+    evaluator::eval_program,
+    lexer::lex,
+    parser::parse_program,
+    util::{ErrorPrinter, ExprTreePrinter, PResult},
+};
