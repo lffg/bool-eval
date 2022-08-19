@@ -18,11 +18,11 @@ pub fn lex(src: &str) -> impl Iterator<Item = Token> + '_ {
             ')' => TokenKind::RParen,
             ',' => TokenKind::Comma,
             c if c.is_ascii_digit() => {
-                let len = bump_while(&mut chars, |c| c.is_ascii_digit());
+                let len = bump_while_next(&mut chars, |c| c.is_ascii_digit());
                 return token(TokenKind::Number, len);
             }
             c if c.is_ascii_alphabetic() => {
-                let len = bump_while(&mut chars, |c| c.is_ascii_alphabetic());
+                let len = bump_while_next(&mut chars, |c| c.is_ascii_alphabetic());
                 return token(TokenKind::Ident, len);
             }
             c if c.is_ascii_whitespace() => TokenKind::Whitespace,
@@ -42,7 +42,7 @@ pub fn lex(src: &str) -> impl Iterator<Item = Token> + '_ {
     )))
 }
 
-fn bump_while<I, F>(chars: &mut Peekable<I>, f: F) -> usize
+fn bump_while_next<I, F>(chars: &mut Peekable<I>, f: F) -> usize
 where
     I: Iterator<Item = (usize, char)>,
     F: Fn(char) -> bool,
