@@ -1,4 +1,4 @@
-use bool_eval::{eval_program, lex, parse_program, ErrorPrinter, ExprTreePrinter, PResult};
+use bool_eval::{eval_program, lex, parse_program, ErrorPrinter, ExprTreePrinter};
 
 fn repl(prompt: &str) -> impl Iterator<Item = String> + '_ {
     use std::io::{stdin, stdout, Write};
@@ -14,26 +14,37 @@ fn repl(prompt: &str) -> impl Iterator<Item = String> + '_ {
     })
 }
 
-fn run(input: &str) -> PResult<bool> {
-    let program = parse_program(input, lex(input))?;
-    if cfg!(feature = "show-tree") {
-        println!(
-            "=== PARSE TREE ===\n{}======",
-            ExprTreePrinter(&program.expr)
-        );
+fn run(input: &str) {
+    let run = || {
+        // How I wish `try` blocks were a thing. :-(
+        let program = parse_program(input, lex(input))?;
+        if cfg!(feature = "show-tree") {
+            println!(
+                "=== PARSE TREE ===\n{}======",
+                ExprTreePrinter(&program.expr)
+            );
+        }
+        eval_program(&program)
+    };
+    match run() {
+        Ok(val) => println!("{val}"),
+        Err(error) => print!("{}", ErrorPrinter(&error, &input)),
     }
-    let val = eval_program(&program)?;
-    Ok(val)
 }
 
 fn main() {
+    let mut args = std::env::args().skip(1);
+
+    if let Some(path) = args.next() {
+        let src = std::fs::read_to_string(path).unwrap();
+        run(&src);
+        return;
+    }
+
     for input in repl(">>> ") {
         if input.trim().is_empty() {
             continue;
         }
-        match run(&input) {
-            Ok(val) => println!("{val}"),
-            Err(error) => print!("{}", ErrorPrinter(&error, &input)),
-        }
+        run(&input);
     }
 }
