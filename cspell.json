@@ -14,7 +14,8 @@
   "useGitignore": true,
   "ignorePaths": [
     ".git",
-    "Cargo.lock"
+    "Cargo.lock",
+    "*.nix"
   ],
   "words": [
     "curr",
